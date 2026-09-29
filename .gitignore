@@ -1,0 +1,9 @@
+# Build outputs from iverilog/vvp
+sim/*
+a.out
+
+# ...but keep testbenches that live in sim/
+!sim/*.v
+
+# Waveform dumps
+*.vcd
