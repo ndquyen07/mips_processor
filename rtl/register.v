@@ -16,11 +16,11 @@ module register (
     always @(posedge clk) begin
         if (reset) begin
             for (i = 0; i < 32; i = i + 1)
-            mem[i] <= 0;
+                mem[i] <= 0;
         end
         else if (write_enable)
             mem[rd] <= write_data;
-        end
+    end
         
     assign read_data1 = (rs == 0) ? 32'b0 : mem[rs];
     assign read_data2 =  (rt == 0) ? 32'b0 : mem[rt];

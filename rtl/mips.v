@@ -1,23 +1,23 @@
 module mips (
     input wire clk,
-    input wire reset
+    input wire reset,
+    input wire [31:0] Instr,
+    input wire [31:0] ReadData,
+    output wire [31:0] Pc,
+    output wire MemWrite,
+    output wire [31:0] WriteData,
+    output wire [31:0] ALUResult
 );
     wire [31:0] PcNext;
-    wire [31:0] Pc;
     wire [31:0] PcPlus4;
     wire [31:0] PcBranch;
-    wire [31:0] Instr;
     wire [31:0] SignImm;
     wire [31:0] SignImmSh;
     wire [31:0] SrcA;
     wire [31:0] SrcB;
-    wire [31:0] ALUResult;
-    wire [31:0] WriteData;
-    wire [31:0] ReadData;
     wire [31:0] Result;
     wire [4:0] WriteReg;
     wire MemtoReg;
-    wire MemWrite;
     wire Branch;
     wire [2:0] ALUControl;
     wire ALUSrc;
@@ -49,11 +49,6 @@ module mips (
         .y(PcPlus4)
     );
 
-
-    instruction_memory instr_mem (
-        .addr(Pc),
-        .readdata(Instr)
-    );
 
 
     //==============================//
@@ -128,15 +123,6 @@ module mips (
 
 
     //==============================//
-
-
-    data_memory data_memory (
-        .clk(clk),
-        .write_enable(MemWrite),
-        .addr(ALUResult),
-        .write_data(WriteData),
-        .read_data(ReadData)
-    );
 
 
     mux2 memtoreg (

@@ -8,7 +8,7 @@ module tb_mips;
     integer pass_n   = 0;
     integer fail_n   = 0;
 
-    mips dut (
+    mips_top dut (
         .clk(clk),
         .reset(reset)
     );
@@ -44,7 +44,7 @@ module tb_mips;
         repeat (5) @(posedge clk);
         #1;
 
-        check(dut.register.mem[10], 32'd30);   // $t2 = 10 + 20
+        check(dut.mips_core.register.mem[10], 32'd30);   // $t2 = 10 + 20
         check(dut.data_memory.mem[2],     32'd30);   // sw wrote it
         check(dut.Pc,                     32'd0);    // branch taken
 

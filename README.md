@@ -1,90 +1,88 @@
-# MIPS Processor
+# MIPS Processor: RTL to GDS
 
-A single-cycle 32-bit MIPS processor. Every instruction completes in one clock cycle.
+A single-cycle 32-bit MIPS core, taken from RTL to GDS with OpenROAD-flow-scripts (ORFS)
+on SkyWater sky130hd.
 
-## Design
+Supported instructions: `add`, `sub`, `and`, `or`, `slt`, `lw`, `sw`, `beq`.
 
-- 32 x 32-bit register file, `$0` always reads 0, synchronous reset clears every register
-- Instruction memory: 64 words, loaded from `program.hex`
-- Data memory: 32 words, loaded from `data.hex`, write on the rising clock edge, asynchronous read
-- Both memories are word-addressed: the low 2 address bits are ignored
-- Control unit is split into a main decoder (from `opcode`) and an ALU decoder (from `funct`)
+## Flow setup
 
-Supported instructions:
+Only the core (`mips`) goes through the flow. Instruction and data memory stay outside
+the core, and their timing is modelled as input and output delays in the SDC.
 
-| Instruction | Type | Opcode   | Funct    | ALU op |
-|-------------|------|----------|----------|--------|
-| `add`       | R    | `000000` | `100000` | `010`  |
-| `sub`       | R    | `000000` | `100010` | `110`  |
-| `and`       | R    | `000000` | `100100` | `000`  |
-| `or`        | R    | `000000` | `100101` | `001`  |
-| `slt`       | R    | `000000` | `101010` | `111`  |
-| `lw`        | I    | `100011` | -        | `010`  |
-| `sw`        | I    | `101011` | -        | `010`  |
-| `beq`       | I    | `000100` | -        | `110`  |
+| Setting          | Value |
+|------------------|-------|
+| Platform         | sky130hd |
+| Top module       | `mips` |
+| Clock            | 10 ns (100 MHz) |
+| Core utilization | 50 % |
+| Flow variant     | `nodly`: delay cells are not used |
 
-The ALU also implements `sltu` (op `101`), but the decoder does not generate it yet.
-
-## Test program
-
-`rtl/data.hex` starts data memory with word 0 = 10 and word 1 = 20. `rtl/program.hex`:
+Run from `OpenROAD-flow-scripts/flow`:
 
 ```
-addr  hex       instruction
-0x00  8C080000  lw  $t0, 0($zero)      # $t0 = 10
-0x04  8C090004  lw  $t1, 4($zero)      # $t1 = 20
-0x08  01095420  add $t2, $t0, $t1      # $t2 = 30
-0x0C  AC0A0008  sw  $t2, 8($zero)      # mem[2] = 30
-0x10  114AFFFB  beq $t2, $t2, -5       # always taken, jumps back to 0x00
+export CFG=/home/kakarot/pd/code/mips_processor/orfs/config.mk
+make DESIGN_CONFIG=$CFG FLOW_VARIANT=nodly            # RTL to GDS
+make DESIGN_CONFIG=$CFG FLOW_VARIANT=nodly gui_final  # view the layout
 ```
 
-## Run
+## Constraints
 
-Unit tests, run from `sim/`:
-
-```
-mkdir -p sim && cd sim
-iverilog -o alu      ../tb/tb_alu.v      ../rtl/alu.v          && vvp alu
-iverilog -o register ../tb/tb_register.v ../rtl/register.v     && vvp register
-iverilog -o cu       tb_control_unit.v   ../rtl/control_unit.v && vvp cu
-```
-
-Full CPU test, run from `rtl/`, because `$readmemh` loads `program.hex` and `data.hex` from the current directory:
+No real memory datasheet, so the memory timings are assumed: 1.5 ns read for both
+memories, 0.5 ns write setup. The budget is set by `lw`, the longest instruction:
 
 ```
-cd rtl
-iverilog -o ../sim/cpu ../tb/tb_mips.v *.v
-vvp ../sim/cpu
+0.0 ->  1.0   PC flop to Pc port                     core
+1.0 ->  2.5   instruction memory read                outside
+2.5 ->  6.5   Instr -> regfile -> ALU -> ALUResult   core, 4.0 ns
+6.5 ->  8.0   data memory read                       outside
+8.0 -> 10.0   ReadData -> regfile, incl. setup       core, 2.0 ns
 ```
 
-iverilog warns that the hex files have fewer words than the memories. This is expected, and the unused words stay `x`.
+This gives the IO delays in `orfs/constraint.sdc`: `Instr` 2.5 ns and `ReadData` 8.0 ns in,
+`ALUResult` 3.5 ns, `Pc` 9.0 ns and `WriteData`/`MemWrite` 0.5 ns out.
 
-To view the waveforms: `gtkwave sim/mips.vcd` (or `alu.vcd`, `register.vcd`, `control_unit.vcd`).
+## Results
 
-## Tests
+| Item             | Value |
+|------------------|-------|
+| Cells (synthesis) | 4,656, 61,210 µm² |
+| Flip-flops       | 1,024 register file + 30 PC |
+| Die              | 351.9 x 351.9 µm |
+| Final area       | 68,479 µm², 56 % utilization |
+| Clock tree       | 109 buffers, skew 0.05 ns |
+| Setup            | WNS −0.71 ns, 28 violating endpoints |
+| Hold             | 0 violations |
+| Routing          | 237 mm wire, 0 router DRC, 0 antenna violations |
+| Power            | 13.3 mW |
 
-- `tb_alu`: 10 checks covering add, sub, and, or, slt, sltu and the `zero` flag
-- `tb_register`: reset clears registers, write then read on both ports, writes to `$0` are ignored, no write when `write_enable = 0`
-- `tb_control_unit`: control signals and `ALUControl` for each supported instruction, plus an unknown opcode
-- `tb_mips`: runs the test program for 5 cycles, then checks `$t2 = 30`, `mem[2] = 30`, and that the `beq` jumped the PC back to 0
+## Problem fixed: delay cells as port buffers
+
+In the first run, the tool used a delay cell (`clkdlybuf4s50_1`, about 0.5 ns) as the
+buffer on several IO ports, including one on the worst path. The `nodly` variant bans
+delay cells, which improved setup after CTS:
+
+|           | before   | after (`nodly`) |
+|-----------|----------|-----------------|
+| Setup WNS | −0.99 ns | −0.56 ns |
+| Setup TNS | −15.53 ns | −9.09 ns |
+
+Cost: delay cells are the cheapest way to fix hold. Without them, hold fixes need
+ordinary buffers. This design had no hold violations, so the cost was not paid here.
+
+## Open
+
+- Setup is not closed. The worst path `Instr` → `ALUResult` takes 4.71 ns against its 4.0 ns
+  budget. Register-to-register paths pass, so the problem is the assumed IO budget.
+- KLayout DRC and LVS have not been run.
 
 ## Files
 
 ```
-rtl/mips.v                 Top level, connects the datapath
-rtl/pc_register.v          Program counter
-rtl/adder.v                32-bit adder (PC + 4, branch target)
-rtl/instruction_memory.v   Instruction memory, loads program.hex
-rtl/control_unit.v         Main decoder + ALU decoder
-rtl/register.v             Register file
-rtl/sign_extend.v          16 to 32-bit sign extension
-rtl/mux2.v                 2:1 mux, parameterized width
-rtl/alu.v                  ALU
-rtl/data_memory.v          Data memory, loads data.hex
-rtl/program.hex            Test program
-rtl/data.hex               Initial data memory
-tb/tb_alu.v                ALU testbench
-tb/tb_register.v           Register file testbench
-tb/tb_mips.v               Full CPU testbench
-tb/tb_control_unit.v       Control unit testbench
+rtl/               Verilog: core (mips.v), simulation top with memories (mips_top.v)
+tb/                Testbenches
+orfs/config.mk     ORFS design config
+orfs/constraint.sdc  Timing constraints
 ```
+
+Simulation, from `rtl/`: `iverilog -o ../sim/cpu ../tb/tb_mips.v *.v && vvp ../sim/cpu`
