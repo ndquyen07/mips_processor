@@ -70,11 +70,6 @@ delay cells, which improved setup after CTS:
 Cost: delay cells are the cheapest way to fix hold. Without them, hold fixes need
 ordinary buffers. This design had no hold violations, so the cost was not paid here.
 
-## Open
-
-- Setup is not closed. The worst path `Instr` → `ALUResult` takes 4.71 ns against its 4.0 ns
-  budget. Register-to-register paths pass, so the problem is the assumed IO budget.
-- KLayout DRC and LVS have not been run.
 
 ## Files
 
