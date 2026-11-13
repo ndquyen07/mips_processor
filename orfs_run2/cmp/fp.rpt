@@ -1,0 +1,44 @@
+Startpoint: Instr[16] (input port clocked by core_clock)
+Endpoint: ALUResult[31] (output port clocked by core_clock)
+Path Group: core_clock
+Path Type: max
+
+Fanout      Cap     Slew    Delay     Time   Description
+---------------------------------------------------------------------------------
+                   0.000    0.000    0.000   clock core_clock (rise edge)
+                            0.000    0.000   clock network delay (ideal)
+                            2.500    2.500 ^ input external delay
+     1    0.002    0.000    0.000    2.500 ^ Instr[16] (in)
+     7    0.028    0.099    0.157    2.657 ^ _3598_/X (sky130_fd_sc_hd__clkbuf_4)
+    10    0.028    0.065    0.162    2.819 ^ _3626_/X (sky130_fd_sc_hd__clkbuf_8)
+    10    0.058    0.166    0.208    3.027 ^ _3786_/X (sky130_fd_sc_hd__buf_4)
+     1    0.002    0.075    0.501    3.528 v _3788_/X (sky130_fd_sc_hd__mux4_2)
+     1    0.002    0.077    0.462    3.989 v _3791_/X (sky130_fd_sc_hd__mux4_2)
+     1    0.003    0.116    0.132    4.121 ^ _3793_/Y (sky130_fd_sc_hd__mux2i_1)
+     2    0.002    0.063    0.049    4.170 v _3794_/Y (sky130_fd_sc_hd__nor2_1)
+     3    0.008    0.208    0.218    4.387 ^ _3798_/Y (sky130_fd_sc_hd__a21oi_1)
+     1    0.002    0.046    0.260    4.647 v _7160_/SUM (sky130_fd_sc_hd__ha_1)
+    10    0.021    0.062    0.156    4.803 v _4189_/X (sky130_fd_sc_hd__buf_2)
+     4    0.008    0.088    0.171    4.974 v _4363_/Y (sky130_fd_sc_hd__nand2b_1)
+     2    0.004    0.092    0.518    5.492 v _4512_/X (sky130_fd_sc_hd__or4_1)
+     1    0.002    0.046    0.165    5.657 v _4515_/Y (sky130_fd_sc_hd__o21bai_1)
+     6    0.013    0.092    0.140    5.797 v _4516_/X (sky130_fd_sc_hd__o31a_1)
+     1    0.005    0.164    0.202    6.000 ^ _5076_/Y (sky130_fd_sc_hd__a31oi_1)
+     1    0.003    0.112    0.132    6.132 ^ _5077_/Y (sky130_fd_sc_hd__xnor2_1)
+     1    0.002    0.039    0.047    6.179 v _5078_/Y (sky130_fd_sc_hd__nor2_1)
+     4    0.007    0.071    0.301    6.481 v _5079_/X (sky130_fd_sc_hd__o32a_1)
+                   0.071    0.000    6.481 v ALUResult[31] (out)
+                                     6.481   data arrival time
+
+                   0.000   10.000   10.000   clock core_clock (rise edge)
+                            0.000   10.000   clock network delay (ideal)
+                            0.000   10.000   clock reconvergence pessimism
+                           -3.500    6.500   output external delay
+                                     6.500   data required time
+---------------------------------------------------------------------------------
+                                     6.500   data required time
+                                    -6.481   data arrival time
+---------------------------------------------------------------------------------
+                                     0.019   slack (MET)
+
+

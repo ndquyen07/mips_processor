@@ -1,0 +1,48 @@
+Startpoint: Instr[16] (input port clocked by core_clock)
+Endpoint: ALUResult[31] (output port clocked by core_clock)
+Path Group: core_clock
+Path Type: max
+
+Fanout      Cap     Slew    Delay     Time   Description
+---------------------------------------------------------------------------------
+                            0.000    0.000   clock core_clock (rise edge)
+                            0.000    0.000   clock network delay (propagated)
+                            2.500    2.500 ^ input external delay
+     1    0.010    0.000    0.000    2.500 ^ Instr[16] (in)
+     4    0.054    0.073    0.135    2.635 ^ input10/X (sky130_fd_sc_hd__clkbuf_16)
+     6    0.083    0.100    0.158    2.793 ^ place1696/X (sky130_fd_sc_hd__buf_16)
+     3    0.028    0.057    0.132    2.925 ^ place1693/X (sky130_fd_sc_hd__buf_8)
+     4    0.031    0.049    0.111    3.036 ^ place1691/X (sky130_fd_sc_hd__buf_12)
+     1    0.005    0.090    0.499    3.535 v _4911_/X (sky130_fd_sc_hd__mux4_2)
+     1    0.031    0.159    0.586    4.121 v _4913_/X (sky130_fd_sc_hd__mux4_2)
+     1    0.007    0.202    0.232    4.353 ^ _4922_/Y (sky130_fd_sc_hd__mux2i_1)
+     2    0.015    0.055    0.169    4.522 ^ place1507/X (sky130_fd_sc_hd__buf_4)
+     1    0.004    0.049    0.039    4.561 v _4923_/Y (sky130_fd_sc_hd__nor3_2)
+     1    0.003    0.109    0.115    4.676 ^ _4924_/Y (sky130_fd_sc_hd__a21oi_1)
+     3    0.032    0.098    0.175    4.851 ^ place1421/X (sky130_fd_sc_hd__buf_4)
+     5    0.023    0.058    0.234    5.085 v _7067_/SUM (sky130_fd_sc_hd__ha_4)
+     2    0.007    0.034    0.145    5.230 v _4501_/X (sky130_fd_sc_hd__and2_4)
+     1    0.005    0.048    0.221    5.451 v _4502_/X (sky130_fd_sc_hd__or2_4)
+     1    0.005    0.262    0.332    5.783 ^ _4508_/Y (sky130_fd_sc_hd__o41ai_2)
+     2    0.022    0.072    0.198    5.981 ^ place1088/X (sky130_fd_sc_hd__buf_4)
+     2    0.014    0.156    0.198    6.179 ^ _4516_/X (sky130_fd_sc_hd__o31a_1)
+     1    0.006    0.122    0.124    6.303 v _5076_/Y (sky130_fd_sc_hd__a31oi_1)
+     1    0.003    0.128    0.185    6.489 ^ _5077_/Y (sky130_fd_sc_hd__xnor2_1)
+     1    0.003    0.048    0.063    6.552 v _5078_/Y (sky130_fd_sc_hd__nor2_1)
+     2    0.012    0.094    0.392    6.944 v _5079_/X (sky130_fd_sc_hd__o32a_1)
+     1    0.002    0.025    0.108    7.052 v output92/X (sky130_fd_sc_hd__buf_1)
+                   0.025    0.000    7.052 v ALUResult[31] (out)
+                                     7.052   data arrival time
+
+                           10.000   10.000   clock core_clock (rise edge)
+                            0.000   10.000   clock network delay (propagated)
+                            0.000   10.000   clock reconvergence pessimism
+                           -3.500    6.500   output external delay
+                                     6.500   data required time
+---------------------------------------------------------------------------------
+                                     6.500   data required time
+                                    -7.052   data arrival time
+---------------------------------------------------------------------------------
+                                    -0.552   slack (VIOLATED)
+
+

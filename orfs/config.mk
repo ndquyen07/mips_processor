@@ -11,6 +11,7 @@ export DESIGN_NAME = mips
 export DESIGN_NICKNAME = mips_flow
 export SDC_FILE = /home/kakarot/pd/code/mips_processor/orfs/constraint.sdc
 export CORE_UTILIZATION = 50
+
 ifeq ($(FLOW_VARIANT),nodly)
 export DONT_USE_CELLS += sky130_fd_sc_hd__clkdlybuf4s* sky130_fd_sc_hd__dlygate4sd* sky130_fd_sc_hd__dlymetal6s*
 endif
